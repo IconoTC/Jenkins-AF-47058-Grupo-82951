@@ -58,7 +58,7 @@
             --volume docker-in-docker-certs:/certs/client:ro --env DOCKER_CERT_PATH=/certs/client ^
             --env DOCKER_HOST=tcp://docker:2376 --env DOCKER_TLS_VERIFY=1 ^
             --env JAVA_OPTS="-Dhudson.plugins.git.GitSCM.ALLOW_LOCAL_CHECKOUT=true" ^
-            jenkins-whit-docker
+            jenkins-with-docker
 
 ## Kata
 
