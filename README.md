@@ -85,3 +85,4 @@
 
     docker run --rm -it --name maven -v %cd%:/local -v maven-repository:/root/.m2 maven:3.8.6-eclipse-temurin-11 sh
 
+mezcla
