@@ -17,27 +17,69 @@
     agent any
     // agent { label &apos;windows&apos; } 
     // agent { node { label &apos;nodo-windows-1&apos; } }
-
+    environment {
+        repo = &apos;https://github.com/jmagit/demos-devops&apos;
+    }
+    // parameters {
+    //     string(name: &apos;Greeting&apos;, defaultValue: &apos;Hello&apos;, description: &apos;How should I greet the world?&apos;)
+    // }
+            // tools {
+            //   maven &apos;maven_3_9_9&apos;
+            // }
     stages {
         stage(&apos;preparacion&apos;) {
             steps {
                 echo &apos;Hello World&apos;
+                // echo &quot;${params.Greeting} World!&quot;
+                echo &quot;Running ${env.BUILD_ID} on ${env.JENKINS_URL}&quot;
+                sh &apos;env&apos;
+                git &quot;$repo&quot;
+                withMaven(maven: &apos;maven_lts&apos;, traceability: true) {
+                    sh &apos;mvn clean compile&apos;
+                }
+            }
+            post {
+                always {
+                    mail to: &apos;team@example.com&apos;,
+                         subject: &quot;paso preparacion Pipeline: ${currentBuild.fullDisplayName}&quot;,
+                         body: &quot;Something is wrong with ${env.BUILD_URL}&quot;
+                }
             }
         }
         stage(&apos;compilacion&apos;) {
+            tools {
+              maven &apos;maven_3_9_9&apos;
+            }
             steps {
                 echo &apos;compilacion&apos;
+                sh &apos;mvn --version&apos;
+                echo &quot;En el repositorio ${repo}&quot;
+                sh &apos;env&apos;
             }
         }
         stage(&apos;pruebas&apos;) {
+            tools {
+              maven &apos;maven_lts&apos;
+            }
             steps {
                 echo &apos;pruebas&apos;
+                sh &apos;mvn --version&apos;
+                echo &quot;En el repositorio ${repo}&quot;
+                sh &apos;env&apos;
             }
         }
         stage(&apos;despliegue&apos;) {
             steps {
                 echo &apos;despliegue&apos;
+                echo &quot;En el repositorio ${repo}&quot;
             }
+        }
+    }
+    post {
+        always {
+            mail to: &apos;team@example.com&apos;,
+                 subject: &quot;Failed Pipeline: ${currentBuild.fullDisplayName}&quot;,
+                 body: &quot;Something is wrong with ${env.BUILD_URL}&quot;
         }
     }
 }
