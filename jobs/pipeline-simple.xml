@@ -5,7 +5,9 @@
     <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction plugin="pipeline-model-definition@2.2273.v643f36ed9e94">
       <jobProperties/>
       <triggers/>
-      <parameters/>
+      <parameters>
+        <string>skip_test</string>
+      </parameters>
       <options/>
     </org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction>
   </actions>
@@ -20,9 +22,10 @@
     environment {
         repo = &apos;https://github.com/jmagit/demos-devops&apos;
     }
-    // parameters {
-    //     string(name: &apos;Greeting&apos;, defaultValue: &apos;Hello&apos;, description: &apos;How should I greet the world?&apos;)
-    // }
+    parameters {
+        // string(name: &apos;Greeting&apos;, defaultValue: &apos;Hello&apos;, description: &apos;How should I greet the world?&apos;)
+        booleanParam(name: &apos;skip_test&apos;, defaultValue: false, description: &apos;Set to true to skip the test stage&apos;)
+    }
             // tools {
             //   maven &apos;maven_3_9_9&apos;
             // }
@@ -63,9 +66,14 @@
             }
             steps {
                 echo &apos;pruebas&apos;
-                sh &apos;mvn --version&apos;
-                echo &quot;En el repositorio ${repo}&quot;
-                sh &apos;env&apos;
+                script {
+                    def test=params.skip_test
+                    if (test == null || !test) {
+                        echo &apos;starting test  ...&apos;
+                    } else {
+                        echo &apos;skipping test ...&apos;
+                    }
+                }
             }
         }
         stage(&apos;despliegue&apos;) {
@@ -78,7 +86,7 @@
     post {
         always {
             mail to: &apos;team@example.com&apos;,
-                 subject: &quot;Failed Pipeline: ${currentBuild.fullDisplayName}&quot;,
+                 subject: &quot;${currentBuild.currentResult} Pipeline: ${currentBuild.fullDisplayName}&quot;,
                  body: &quot;Something is wrong with ${env.BUILD_URL}&quot;
         }
     }
