@@ -1,62 +1,63 @@
 pipeline {
     agent any
-    // agent { label 'windows' } 
-    // agent { node { label 'nodo-windows-1' } }
-    environment {
-        repo = 'https://github.com/jmagit/demos-devops'
+    tools {
+      maven 'maven_3_9_9'
     }
-    // parameters {
-    //     string(name: 'Greeting', defaultValue: 'Hello', description: 'How should I greet the world?')
-    // }
-            // tools {
-            //   maven 'maven_3_9_9'
-            // }
+
     stages {
-        stage('preparacion') {
+        stage('Preparacion') {
             steps {
-                echo 'Hello World'
-                // echo "${params.Greeting} World!"
-                echo "Running ${env.BUILD_ID} on ${env.JENKINS_URL}"
-                sh 'env'
-                git "$repo"
-                withMaven(maven: 'maven_lts', traceability: true) {
-                    sh 'mvn clean compile'
-                }
+                git 'https://github.com/jmagit/demos-devops.git'
+            }
+        }
+        stage('Compilar') {
+            steps {
+                sh 'mvn compile'
+            }
+        }
+        stage('Test unitarios') {
+            steps {
+                sh 'mvn test'
             }
             post {
                 always {
-                    mail to: 'team@example.com',
-                         subject: "paso preparacion Pipeline: ${currentBuild.fullDisplayName}",
-                         body: "Something is wrong with ${env.BUILD_URL}"
+                    junit 'target/surefire-reports/*.xml'
+                    recordCoverage(tools: [[parser: 'JACOCO']])
+                }
+            }
+       }
+        stage('Costruccion') {
+            steps {
+                sh 'mvn package -DskipTests'
+            }
+            post {
+                success {
+                    archiveArtifacts 'target/**/*.jar'
                 }
             }
         }
-        stage('compilacion') {
-            tools {
-              maven 'maven_3_9_9'
-            }
+        stage('Despliegue') {
             steps {
-                echo 'compilacion'
-                sh 'mvn --version'
-                echo "En el repositorio ${repo}"
-                sh 'env'
+                sh 'mvn install -DskipTests'
             }
         }
-        stage('pruebas') {
-            tools {
-              maven 'maven_lts'
-            }
+        stage('Documentacion') {
             steps {
-                echo 'pruebas'
-                sh 'mvn --version'
-                echo "En el repositorio ${repo}"
-                sh 'env'
+                sh 'mvn site'
             }
-        }
-        stage('despliegue') {
-            steps {
-                echo 'despliegue'
-                echo "En el repositorio ${repo}"
+            post {
+                success {
+                    publishHTML([
+                        allowMissing: false, 
+                        alwaysLinkToLastBuild: false, 
+                        keepAll: false, 
+                        reportDir: 'target/site/', 
+                        reportFiles: 'index.html', 
+                        reportName: 'Documentacion del sitio', 
+                        reportTitles: 'Documentacion del sitio', 
+                        useWrapperFileDirectly: true
+                        ])
+                }
             }
         }
     }
