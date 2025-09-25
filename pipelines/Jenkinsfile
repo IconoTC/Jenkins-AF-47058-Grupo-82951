@@ -1,0 +1,70 @@
+pipeline {
+    agent any
+    // agent { label 'windows' } 
+    // agent { node { label 'nodo-windows-1' } }
+    environment {
+        repo = 'https://github.com/jmagit/demos-devops'
+    }
+    // parameters {
+    //     string(name: 'Greeting', defaultValue: 'Hello', description: 'How should I greet the world?')
+    // }
+            // tools {
+            //   maven 'maven_3_9_9'
+            // }
+    stages {
+        stage('preparacion') {
+            steps {
+                echo 'Hello World'
+                // echo "${params.Greeting} World!"
+                echo "Running ${env.BUILD_ID} on ${env.JENKINS_URL}"
+                sh 'env'
+                git "$repo"
+                withMaven(maven: 'maven_lts', traceability: true) {
+                    sh 'mvn clean compile'
+                }
+            }
+            post {
+                always {
+                    mail to: 'team@example.com',
+                         subject: "paso preparacion Pipeline: ${currentBuild.fullDisplayName}",
+                         body: "Something is wrong with ${env.BUILD_URL}"
+                }
+            }
+        }
+        stage('compilacion') {
+            tools {
+              maven 'maven_3_9_9'
+            }
+            steps {
+                echo 'compilacion'
+                sh 'mvn --version'
+                echo "En el repositorio ${repo}"
+                sh 'env'
+            }
+        }
+        stage('pruebas') {
+            tools {
+              maven 'maven_lts'
+            }
+            steps {
+                echo 'pruebas'
+                sh 'mvn --version'
+                echo "En el repositorio ${repo}"
+                sh 'env'
+            }
+        }
+        stage('despliegue') {
+            steps {
+                echo 'despliegue'
+                echo "En el repositorio ${repo}"
+            }
+        }
+    }
+    post {
+        always {
+            mail to: 'team@example.com',
+                 subject: "${currentBuild.currentResult} Pipeline: ${currentBuild.fullDisplayName}",
+                 body: "Something is wrong with ${env.BUILD_URL}"
+        }
+    }
+}
