@@ -11,7 +11,7 @@ pipeline {
         }
         stage('Front-end') {
             agent {
-                docker { image 'docker pull node:lts-alpine3.22' }
+                docker { image 'node:lts-alpine3.22' }
             }
             steps {
                 sh 'node --version'
