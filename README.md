@@ -85,8 +85,12 @@
 
     docker run --rm -it --name maven -v .:/local -v maven-repository:/root/.m2 maven:3.8.6-eclipse-temurin-8 bash
 
-### Exportación e inportacion
+### Exportación e importación
+
+#### Exportación
 
 java -jar jenkins-cli.jar -s http://***usr:xxxxxxx@localhost***:50080/ get-job ***job-name **>** job-name.xml***
-java -jar jenkins-cli.jar -s http://usr:xxxxxxx@localhost:50080/ create-job ***job-name **<** job-name.xml***
 
+#### Importación
+
+java -jar jenkins-cli.jar -s http://usr:xxxxxxx@localhost:50080/ create-job ***job-name **<** job-name.xml***
